@@ -80,7 +80,7 @@ def render():
        for i in range(K):
            centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
            #accumulate(kluster_sums_min[i],kluster_sums_max[i])
-           centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_min[i], 1.0/2.0)
+           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_min[i], 1.0/2.0)
        assignments = [closest_cent(centers, coor) for coor in coordinates]
 
    lvls = '00 CC 44 FF 88'.split()

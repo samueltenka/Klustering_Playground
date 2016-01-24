@@ -37,34 +37,42 @@ w = Canvas(master, height=cnvs_h, width=cnvs_w)
 to_canvas = lambda coor: (cnvs_h * (coor[0]-miny)/(maxy-miny), cnvs_w * (coor[1]-minx)/(maxx-minx))
 w.pack()
 
-#kmeans klustering:
-K = 100; N = len(coordinates); numsteps=40;
-print('defining lambdas...')
-randcoor = lambda : (random()*(maxy-miny)+miny, random()*(maxx-minx)+minx)
-def dist(c0,c1):
-    #print(c0, c1)
-    return max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1]))
-#dist = lambda c0, c1: max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1])) #sqrt((c1[0]-c0[0])**2+(c1[1]-c0[1])**2)
-closest_cent = lambda centers, coor: min((dist(centers[i],coor), i) for i in range(K))[1]
-def accumulate(c0, c1):
-    c0[0] += c1[0]
-    c0[1] += c1[1]
-def acc_max(c0, c1):
-    if c0 is None:
-        c0 = c1[:]
-        return
-    c0[0] = max(c0[0], c1[0])
-    c0[1] = max(c0[1], c1[1])
-def acc_min(c0, c1):
-    if c0 is None:
-        c0 = c1[:]
-        return
-    c0[0] = min(c0[0], c1[0])
-    c0[1] = min(c0[1], c1[1])
-def scale(c, scale):
-    return (c[0]*scale, c[1]*scale)
+class Rectangle:
+    point_metric = lambda c0,c1: max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1]))
+    def __init__(self, coor=None):
+        '''0th coor is (miny,minx); 1th coor is (maxy,maxx)'''
+        self.from_point([None]*2 if coor is None else coor)
+    def draw_on(self, canvas):
+        y,x = to_canvas(self.coors[0])
+        Y,X = to_canvas(self.coors[1])
+        w.create_rectangle(x,y,X,Y, outline=colors[assignments[i]])
+    def center(self):
+        return [sum(self.coors[i][j] for i in range(2))/2 for j in range(2)]
+    def disconnect_distance(self, other):
+        return min(-other.coors[1][0] + self.coors[0][0],
+                   other.coors[1][0] - self.coors[1][0],
+                   -other.coors[1][1] + self.coors[0][1],
+                   other.coors[1][1] - self.coors[1][1])
+    def overlaps(self, other): #TODO: check correctness!
+        return disconnect_distance(self, other) < 0.0
+    def dist_to(self, other):
+        return point_metric(self.center(),other.center()) +\
+               max(0, disconnect_distance(self, other))
+    def join(self, other):
+        rtrn = Rectangle(); stats = (min,max)
+        rtrn.coors = [[stats[i](self.coors[i][j]) for j in range(2)] for i in range(2)]
+        return rtrn
+    def from_point(self, coor):
+        self.coors = [coor[:]]*2
+    def closest_cent(self, centers):
+        return min((dist(centers[i],coor), i) for i in range(len(centers)))[1]
 
-centers = [randcoor() for k in range(K)]
+#kmeans klustering:
+K = 100; N = len(coordinates); numsteps=100
+def randomize_to_point(self, other):
+    Rectangle rtrn()
+    from_point([random()*(maxy-miny)+miny, random()*(maxx-minx)+minx])
+centers = [Rectangle() for k in range(K)]
 assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
 
 STEP=0
@@ -100,10 +108,8 @@ def render():
        y,x = to_canvas(coordinates[i])
        w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])
 
-   if STEP<100:
+   if STEP<numsteps:
       w.after(100, render) #render 10 times a second
 
 render()
 mainloop()
-
-#for i in range(numsteps):

@@ -39,9 +39,9 @@ w.pack()
 #    w.create_rectangle(x, y, x+1, y+1, outline="blue",fill="blue")
 
 #kmeans klustering:
-K = 100; N = len(coordinates); numsteps=40;
+K = 8; N = len(coordinates); numsteps=40;
 print('defining lambdas...')
-randcoor = lambda : (random()*(maxx-minx)+minx, random()*(maxy-miny)+miny)
+randcoor = lambda : (random()*(maxy-miny)+miny, random()*(maxx-minx)+minx)
 def dist(c0,c1):
     #print(c0, c1)
     return max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1]))
@@ -50,10 +50,10 @@ closest_cent = lambda centers, coor: min((dist(centers[i],coor), i) for i in ran
 def accumulate(c0, c1):
     c0[0] += c1[0]
     c0[1] += c1[1]
-def accmax(c0, c1):
+def acc_max(c0, c1):
     c0[0] = max(c0[0], c1[0])
     c0[1] = max(c0[1], c1[1])
-def accmin(c0, c1):
+def acc_min(c0, c1):
     c0[0] = min(c0[0], c1[0])
     c0[1] = min(c0[1], c1[1])
 def scale(c, scale):
@@ -63,16 +63,20 @@ centers = [randcoor() for k in range(K)]
 assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
 for i in range(numsteps):
    print('step %d...' % i); stdout.flush()
-   kluster_sums = [[0.0,0.0] for i in range(K)]
+   kluster_sums_min = [[miny,minx] for i in range(K)]
+   kluster_sums_max = [[maxy,maxx] for i in range(K)]
    counts = [0 for i in range(K)]
    for i in range(N):
-       accumulate(kluster_sums[assignments[i]], coordinates[i])
+       acc_min(kluster_sums_min[assignments[i]], coordinates[i])
+       acc_max(kluster_sums_max[assignments[i]], coordinates[i])
        counts[assignments[i]] += 1
    for i in range(K):
-       centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
+       #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
+       accumulate(kluster_sums_max[i],kluster_sums_min[i])
+       centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_max[i], 1.0/2.0)
    assignments = [closest_cent(centers, coor) for coor in coordinates]
 
-lvls = '00 44 88 CC FF'.split()
+lvls = '00 FF'.split()
 colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
 
 for i in range(K):

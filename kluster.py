@@ -74,19 +74,19 @@ def render():
 
    for j in range(5):
        print('step %d...' % STEP); stdout.flush(); STEP+=1
-       kluster_sums = [[0.0,0.0] for i in range(K)]
+       #kluster_sums = [[0.0,0.0] for i in range(K)]
        kluster_mins = [list(centers[i]) for i in range(K)]
        kluster_maxs = [list(centers[i]) for i in range(K)]
        counts = [0 for i in range(K)]
        for i in range(N):
-           accumulate(kluster_sums[assignments[i]], coordinates[i])
+           #accumulate(kluster_sums[assignments[i]], coordinates[i])
            acc_min(kluster_mins[assignments[i]], coordinates[i])
            acc_max(kluster_maxs[assignments[i]], coordinates[i])
            counts[assignments[i]] += 1
+       kluster_avgs = [((c0[0]+c1[0])/2,(c0[1]+c1[1])/2) for c0,c1 in zip(kluster_mins, kluster_maxs)]
        for i in range(K):
-           centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
-           #accumulate(kluster_mins[i],kluster_maxs[i])
-           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_mins[i], 1.0/2.0)
+           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
+           centers[i] = randcoor() if counts[i]==0 else kluster_avgs[i]
        assignments = [closest_cent(centers, coor) for coor in coordinates]
 
    lvls = '00 CC 44 FF 88'.split()

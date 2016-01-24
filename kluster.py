@@ -6,6 +6,7 @@ and clusters
 import re
 from math import sqrt
 from random import random
+from sys import stdout
 
 print('defining lambdas...')
 p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
@@ -27,22 +28,24 @@ minx, maxx, miny, maxy = min(xs[0]), max(xs[0]), min(xs[1]), max(xs[1])
 print('height ranges in [%d,%d]; width ranges in [%d,%d]' % (minx, maxx, miny, maxy))
 
 #kmeans klustering:
-K = 100; N = len(coordinates)
+K = 10; N = len(coordinates)
 print('defining lambdas...')
-randcoor = lambda: (random()*(maxx-minx)+minx, random()*(maxy-miny)+miny)
-centers = [[randcoor()] for k in range(K)] #extra[]layer for identity-permanence
-print('defining lambdas...')
+randcoor = lambda : (random()*(maxx-minx)+minx, random()*(maxy-miny)+miny)
 dist = lambda c0, c1: sqrt((c1[0]-c0[0])**2+(c1[1]-c0[1])**2)
-closest = lambda coor: min((dist(c[0],coor), c) for c in centers)[1]
-print('defining lambdas...')
-assignments = [closest(coor) for coor in coordinates] #not DRY!
-#avg = lambda clist: randcoor() if len(clist)==0 else (sum(c[0] for c in clist)/len(clist), sum(c[1] for c in clist)/len(clist))
-#kluster_avg = lambda cent: avg([c for c in coordinates if assignments[i]==cent])
+closest_cent = lambda centers, coor: min((dist(centers[i],coor), i) for i in range(K))[1]
+def accumulate(c0, c1):
+    c0[0] += c1[0]
+    c0[1] += c1[1]
+def scale(c, scale):
+    c0[0] *= scale
+    c0[1] *= scale
 
+centers = [randcoor() for k in range(K)]
+assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
 for i in range(100):
-   print('step %d...' % i)
+   print('step %d...' % i); stdout.flush()
    kluster_sums = [[0.0,0.0] for i in range(K)]
-   for i in range(N):
-       assignments[i]
-   centers = [[kluster_avg(c)] for c in centers]
-   assignments = [closest(coor) for coor in coordinates]'''
+   counts = [0 for i in range(K)]
+   for i in range(N): accumulate(kluster_sums[assignments[i]], coordinates[i])
+   for i in range(K): centers[i] = randcoor() if counts[i]==0 else kluster_sums[i]/counts[i]
+   assignments = [closest_cent(centers, coor) for coor in coordinates]

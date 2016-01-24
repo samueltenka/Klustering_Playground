@@ -50,9 +50,15 @@ def accumulate(c0, c1):
     c0[0] += c1[0]
     c0[1] += c1[1]
 def acc_max(c0, c1):
+    if c0 is None:
+        c0 = c1[:]
+        return
     c0[0] = max(c0[0], c1[0])
     c0[1] = max(c0[1], c1[1])
 def acc_min(c0, c1):
+    if c0 is None:
+        c0 = c1[:]
+        return
     c0[0] = min(c0[0], c1[0])
     c0[1] = min(c0[1], c1[1])
 def scale(c, scale):
@@ -69,25 +75,27 @@ def render():
    for j in range(5):
        print('step %d...' % STEP); stdout.flush(); STEP+=1
        kluster_sums = [[0.0,0.0] for i in range(K)]
-       #kluster_sums_min = [[miny,minx] for i in range(K)]
-       #kluster_sums_max = [[maxy,maxx] for i in range(K)]
+       kluster_mins = [list(centers[i]) for i in range(K)]
+       kluster_maxs = [list(centers[i]) for i in range(K)]
        counts = [0 for i in range(K)]
        for i in range(N):
            accumulate(kluster_sums[assignments[i]], coordinates[i])
-           #acc_min(kluster_sums_min[assignments[i]], coordinates[i])
-           #acc_max(kluster_sums_max[assignments[i]], coordinates[i])
+           acc_min(kluster_mins[assignments[i]], coordinates[i])
+           acc_max(kluster_maxs[assignments[i]], coordinates[i])
            counts[assignments[i]] += 1
        for i in range(K):
            centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
-           #accumulate(kluster_sums_min[i],kluster_sums_max[i])
-           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_min[i], 1.0/2.0)
+           #accumulate(kluster_mins[i],kluster_maxs[i])
+           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_mins[i], 1.0/2.0)
        assignments = [closest_cent(centers, coor) for coor in coordinates]
 
    lvls = '00 CC 44 FF 88'.split()
    colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
    for i in range(K):
        y,x = to_canvas(centers[i])
-       w.create_rectangle(x, y, x+10, y+10, outline=colors[i])
+       y0,x0 = to_canvas(kluster_mins[i])
+       y1,x1 = to_canvas(kluster_maxs[i])
+       w.create_rectangle(x0,y0,x1,y1, outline=colors[i])
    for i in range(N):
        y,x = to_canvas(coordinates[i])
        w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])

@@ -38,7 +38,7 @@ to_canvas = lambda coor: (cnvs_h * (coor[0]-miny)/(maxy-miny), cnvs_w * (coor[1]
 w.pack()
 
 #kmeans klustering:
-K = 100; N = len(coordinates); numsteps=40;
+K = 60; N = len(coordinates); numsteps=40;
 print('defining lambdas...')
 randcoor = lambda : (random()*(maxy-miny)+miny, random()*(maxx-minx)+minx)
 def dist(c0,c1):
@@ -79,11 +79,12 @@ def render():
        kluster_maxs = [list(centers[i]) for i in range(K)]
        counts = [0 for i in range(K)]
        for i in range(N):
-           accumulate(kluster_sums[assignments[i]], coordinates[i])
-           acc_min(kluster_mins[assignments[i]], coordinates[i])
-           acc_max(kluster_maxs[assignments[i]], coordinates[i])
-           counts[assignments[i]] += 1
-       kluster_avgs = [((c0[0]+c1[0])/2,(c0[1]+c1[1])/2) for c0,c1 in zip(kluster_mins, kluster_maxs)]
+           if random() < 9.0/10.0:
+              accumulate(kluster_sums[assignments[i]], coordinates[i])
+              acc_min(kluster_mins[assignments[i]], coordinates[i])
+              acc_max(kluster_maxs[assignments[i]], coordinates[i])
+              counts[assignments[i]] += 1
+       #kluster_avgs = [((c0[0]+c1[0])/2,(c0[1]+c1[1])/2) for c0,c1 in zip(kluster_mins, kluster_maxs)]
        for i in range(K):
            centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
            #centers[i] = randcoor() if counts[i]==0 else kluster_avgs[i]
@@ -95,7 +96,7 @@ def render():
        y,x = to_canvas(centers[i])
        y0,x0 = to_canvas(kluster_mins[i])
        y1,x1 = to_canvas(kluster_maxs[i])
-       w.create_rectangle(x0,y0,x1,y1, outline=colors[i])
+       w.create_rectangle(x0,y0,x1,y1, outline=colors[i], fill=colors[i], stipple='gray12')
    for i in range(N):
        y,x = to_canvas(coordinates[i])
        w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])

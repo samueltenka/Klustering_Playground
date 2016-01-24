@@ -9,9 +9,9 @@ from random import random
 from sys import stdout
 
 from tkinter import *
+from Box.py import Box
 master = Tk()
 
-print('defining lambdas...')
 p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
                'STYLEREFS="(?P<stylerefs>[^"]*)" ' +
                'HEIGHT="(?P<height>[^"]*)" ' +
@@ -21,7 +21,6 @@ p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
                'CONTENT="(?P<content>[^"]*)" ' +
                'WC="(?P<wc>[^"]*)"/>')
 
-print('defining lambdas...')
 with open('0005.xml') as f:
     text = f.read()
     getnum = lambda match, label: float(match.group(label))
@@ -37,42 +36,11 @@ w = Canvas(master, height=cnvs_h, width=cnvs_w)
 to_canvas = lambda coor: (cnvs_h * (coor[0]-miny)/(maxy-miny), cnvs_w * (coor[1]-minx)/(maxx-minx))
 w.pack()
 
-class Rectangle:
-    point_metric = lambda c0,c1: max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1]))
-    def __init__(self, coor=None):
-        '''0th coor is (miny,minx); 1th coor is (maxy,maxx)'''
-        self.from_point([None]*2 if coor is None else coor)
-    def draw_on(self, canvas):
-        y,x = to_canvas(self.coors[0])
-        Y,X = to_canvas(self.coors[1])
-        w.create_rectangle(x,y,X,Y, outline=colors[assignments[i]])
-    def center(self):
-        return [sum(self.coors[i][j] for i in range(2))/2 for j in range(2)]
-    def disconnect_distance(self, other):
-        return min(-other.coors[1][0] + self.coors[0][0],
-                   other.coors[1][0] - self.coors[1][0],
-                   -other.coors[1][1] + self.coors[0][1],
-                   other.coors[1][1] - self.coors[1][1])
-    def overlaps(self, other): #TODO: check correctness!
-        return disconnect_distance(self, other) < 0.0
-    def dist_to(self, other):
-        return point_metric(self.center(),other.center()) +\
-               max(0, disconnect_distance(self, other))
-    def join(self, other):
-        rtrn = Rectangle(); stats = (min,max)
-        rtrn.coors = [[stats[i](self.coors[i][j]) for j in range(2)] for i in range(2)]
-        return rtrn
-    def from_point(self, coor):
-        self.coors = [coor[:]]*2
-    def closest_cent(self, centers):
-        return min((dist(centers[i],coor), i) for i in range(len(centers)))[1]
-
 #kmeans klustering:
 K = 100; N = len(coordinates); numsteps=100
-def randomize_to_point(self, other):
-    Rectangle rtrn()
-    from_point([random()*(maxy-miny)+miny, random()*(maxx-minx)+minx])
-centers = [Rectangle() for k in range(K)]
+def random_pt_within(self, other, bb):
+    return Box([random()*(bb.coors[1][i]-bb.coors[0][i])+bb.coors[1][i] for i in range(2)])
+centers = [random_pt_within() for k in range(K)]
 assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
 
 STEP=0
@@ -103,10 +71,10 @@ def render():
        y,x = to_canvas(centers[i])
        y0,x0 = to_canvas(kluster_mins[i])
        y1,x1 = to_canvas(kluster_maxs[i])
-       w.create_rectangle(x0,y0,x1,y1, outline=colors[i])
+       w.create_Box(x0,y0,x1,y1, outline=colors[i])
    for i in range(N):
        y,x = to_canvas(coordinates[i])
-       w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])
+       w.create_Box(x, y, x+1, y+1, outline=colors[assignments[i]])
 
    if STEP<numsteps:
       w.after(100, render) #render 10 times a second

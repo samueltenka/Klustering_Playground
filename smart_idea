@@ -1,0 +1,24 @@
+k, this document's idea is not necessarily smart.
+
+but based on kluster.py's output
+(and we'll freeze that file for a while ---
+ new changes will be made to kluster_smart.py),
+we guess we can improve by accounting for widths and heights.
+that is, distance from a kluster should be affected by
+distance from its rectangle rather than just its "center".
+and words have widths and heights as well.
+
+so we want to generalize all points to rectangles.
+for kmeans, we need to define
+   distance : rectangles^2 --> real numbers
+   centroid: rectangles^n --> rectangles
+
+how about:
+    distance from A [a word] to B [a center]
+    is (maxdistance of centers) +
+       (0 if overlap, else smallest distance between edges)
+    note that an asymmetric metric might be desirable. to be continued...
+
+    centroid of a bunch of rectangles [words] is:
+    smallest box containing 'em all
+

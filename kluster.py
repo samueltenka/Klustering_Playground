@@ -36,12 +36,9 @@ cnvs_h, cnvs_w = 480, 320
 w = Canvas(master, height=cnvs_h, width=cnvs_w)
 to_canvas = lambda coor: (cnvs_h * (coor[0]-miny)/(maxy-miny), cnvs_w * (coor[1]-minx)/(maxx-minx))
 w.pack()
-#for c in coordinates:
-#    y,x = to_canvas(c)
-#    w.create_rectangle(x, y, x+1, y+1, outline="blue",fill="blue")
 
 #kmeans klustering:
-K = 27; N = len(coordinates); numsteps=40;
+K = 100; N = len(coordinates); numsteps=40;
 print('defining lambdas...')
 randcoor = lambda : (random()*(maxy-miny)+miny, random()*(maxx-minx)+minx)
 def dist(c0,c1):
@@ -63,28 +60,42 @@ def scale(c, scale):
 
 centers = [randcoor() for k in range(K)]
 assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
-for i in range(numsteps):
-   print('step %d...' % i); stdout.flush()
-   kluster_sums_min = [[miny,minx] for i in range(K)]
-   kluster_sums_max = [[maxy,maxx] for i in range(K)]
-   counts = [0 for i in range(K)]
-   for i in range(N):
-       acc_min(kluster_sums_min[assignments[i]], coordinates[i])
-       acc_max(kluster_sums_max[assignments[i]], coordinates[i])
-       counts[assignments[i]] += 1
+
+STEP=0
+def render():
+   global centers,assignments, STEP
+   w.delete('all')
+
+   for j in range(5):
+       print('step %d...' % STEP); stdout.flush(); STEP+=1
+       kluster_sums = [[0.0,0.0] for i in range(K)]
+       #kluster_sums_min = [[miny,minx] for i in range(K)]
+       #kluster_sums_max = [[maxy,maxx] for i in range(K)]
+       counts = [0 for i in range(K)]
+       for i in range(N):
+           accumulate(kluster_sums[assignments[i]], coordinates[i])
+           #acc_min(kluster_sums_min[assignments[i]], coordinates[i])
+           #acc_max(kluster_sums_max[assignments[i]], coordinates[i])
+           counts[assignments[i]] += 1
+       for i in range(K):
+           centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
+           #accumulate(kluster_sums_max[i],kluster_sums_min[i])
+           #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_max[i], 1.0/2.0)
+       assignments = [closest_cent(centers, coor) for coor in coordinates]
+
+   lvls = '00 CC 44 FF 88'.split()
+   colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
    for i in range(K):
-       #centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
-       accumulate(kluster_sums_max[i],kluster_sums_min[i])
-       centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_max[i], 1.0/2.0)
-   assignments = [closest_cent(centers, coor) for coor in coordinates]
+       y,x = to_canvas(centers[i])
+       w.create_rectangle(x, y, x+10, y+10, outline=colors[i])
+   for i in range(N):
+       y,x = to_canvas(coordinates[i])
+       w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])
 
-lvls = '00 88 FF'.split()
-colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
+   if STEP<100:
+      w.after(100, render) #render 10 times a second
 
-for i in range(K):
-    y,x = to_canvas(centers[i])
-    w.create_rectangle(x, y, x+10, y+10, outline=colors[i])
-for i in range(N):
-    y,x = to_canvas(coordinates[i])
-    w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])
+render()
 mainloop()
+
+#for i in range(numsteps):

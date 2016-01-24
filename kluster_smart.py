@@ -16,9 +16,9 @@ mycanvas = Canvas(master, height=canvasbb.coors[1][0], width=canvasbb.coors[1][1
 mycanvas.pack()
 
 mypage = Page('0005.xml')
-myclusterer = KMeans(K=100, page=mypage)
+myclusterer = KMeans(K=75, page=mypage)
 
-STEP=0; numsteps=1000
+STEP=0; numsteps=50
 def render():
     global STEP, numsteps, mycanvas, mypage, myclusterer
     print('step %d...' % STEP); STEP+=1; stdout.flush()

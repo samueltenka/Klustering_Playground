@@ -39,26 +39,37 @@ w.pack()
 #    w.create_rectangle(x, y, x+1, y+1, outline="blue",fill="blue")
 
 #kmeans klustering:
-K = 100; N = len(coordinates)
+K = 100; N = len(coordinates); numsteps=40;
 print('defining lambdas...')
 randcoor = lambda : (random()*(maxx-minx)+minx, random()*(maxy-miny)+miny)
-dist = lambda c0, c1: sqrt((c1[0]-c0[0])**2+(c1[1]-c0[1])**2)
+def dist(c0,c1):
+    #print(c0, c1)
+    return max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1]))
+#dist = lambda c0, c1: max(abs(c1[0]-c0[0]),abs(c1[1]-c0[1])) #sqrt((c1[0]-c0[0])**2+(c1[1]-c0[1])**2)
 closest_cent = lambda centers, coor: min((dist(centers[i],coor), i) for i in range(K))[1]
 def accumulate(c0, c1):
     c0[0] += c1[0]
     c0[1] += c1[1]
+def accmax(c0, c1):
+    c0[0] = max(c0[0], c1[0])
+    c0[1] = max(c0[1], c1[1])
+def accmin(c0, c1):
+    c0[0] = min(c0[0], c1[0])
+    c0[1] = min(c0[1], c1[1])
 def scale(c, scale):
-    c0[0] *= scale
-    c0[1] *= scale
+    return (c[0]*scale, c[1]*scale)
 
 centers = [randcoor() for k in range(K)]
 assignments = [closest_cent(centers, coor) for coor in coordinates] #not DRY!
-for i in range(100):
+for i in range(numsteps):
    print('step %d...' % i); stdout.flush()
    kluster_sums = [[0.0,0.0] for i in range(K)]
    counts = [0 for i in range(K)]
-   for i in range(N): accumulate(kluster_sums[assignments[i]], coordinates[i])
-   for i in range(K): centers[i] = randcoor() if counts[i]==0 else kluster_sums[i]/counts[i]
+   for i in range(N):
+       accumulate(kluster_sums[assignments[i]], coordinates[i])
+       counts[assignments[i]] += 1
+   for i in range(K):
+       centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums[i], 1.0/counts[i])
    assignments = [closest_cent(centers, coor) for coor in coordinates]
 
 lvls = '00 44 88 CC FF'.split()

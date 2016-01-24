@@ -24,7 +24,9 @@ p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
 print('defining lambdas...')
 with open('0005.xml') as f:
     text = f.read()
-    coordinates = [(float(m.group('vpos')), float(m.group('hpos'))) for m in p.finditer(text)]
+    getnum = lambda match, label: float(match.group(label))
+    coordinates = [(getnum(m,'vpos')+0.5*getnum(m,'height'),
+                    getnum(m,'hpos')+0.5*getnum(m,'width')) for m in p.finditer(text)]
     print('xml has %d characters, %d ocr points.' % (len(text), len(coordinates)))
 xs = [[c[i] for c in coordinates] for i in range(2)]
 miny, maxy, minx, maxx = min(xs[0]), max(xs[0]), min(xs[1]), max(xs[1])
@@ -39,7 +41,7 @@ w.pack()
 #    w.create_rectangle(x, y, x+1, y+1, outline="blue",fill="blue")
 
 #kmeans klustering:
-K = 8; N = len(coordinates); numsteps=40;
+K = 27; N = len(coordinates); numsteps=40;
 print('defining lambdas...')
 randcoor = lambda : (random()*(maxy-miny)+miny, random()*(maxx-minx)+minx)
 def dist(c0,c1):
@@ -76,7 +78,7 @@ for i in range(numsteps):
        centers[i] = randcoor() if counts[i]==0 else scale(kluster_sums_max[i], 1.0/2.0)
    assignments = [closest_cent(centers, coor) for coor in coordinates]
 
-lvls = '00 FF'.split()
+lvls = '00 88 FF'.split()
 colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
 
 for i in range(K):

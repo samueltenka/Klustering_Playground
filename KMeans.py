@@ -2,9 +2,10 @@
    see Page.py : Page class
 '''
 from sys import stdout
+from random import random
 
 lvls = '00 CC 44 FF 88'.split() #not in order, for better color-contrast
-colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls] #5**3==125 colors total
+colors = ['#'+R+G+B for B in lvls for G in lvls for R in lvls] #5**3==125 colors total
 class KMeans:
     def __init__(self, K, page):
         print('initializing kmeans clusterer...'); stdout.flush()
@@ -20,7 +21,12 @@ class KMeans:
             c = self.centers[i]
             c.from_point(c.center())
         for i in range(self.N):
-            self.centers[self.assignments[i]].join_with(self.page.words[i])
+            if random() < 1.0/10.0: ##RANDOM!
+               self.centers[self.assignments[i]].join_with(self.page.words[i])
+        for center in self.centers:
+            if center.coors[0][0]==center.coors[1][0] or \
+               center.coors[0][1]==center.coors[1][1]:
+               center.from_point(self.page.bb.random_pt_within().coors[0])
     def draw_on(self, canvas, cbbcs):
         pbbcs = self.page.bb.coors
         for center,color in zip(self.centers, colors):

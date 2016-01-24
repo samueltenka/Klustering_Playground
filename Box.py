@@ -35,4 +35,4 @@ class Box:
     def closest_cent(self, centers):
         return min((self.dist_to(centers[i]), i) for i in range(len(centers)))[1]
     def random_pt_within(self):
-       return Box([random()*(self.coors[1][i]-self.coors[0][i])+self.coors[1][i] for i in range(2)])
+       return Box([random()*(self.coors[1][i]-self.coors[0][i])+self.coors[0][i] for i in range(2)])

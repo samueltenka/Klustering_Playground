@@ -18,14 +18,17 @@ mycanvas.pack()
 mypage = Page('0005.xml')
 myclusterer = KMeans(K=100, page=mypage)
 
-STEP=0; numsteps=100
+STEP=0; numsteps=1000
 def render():
     global STEP, numsteps, mycanvas, mypage, myclusterer
     print('step %d...' % STEP); STEP+=1; stdout.flush()
     mycanvas.delete('all')
     myclusterer.Mstep()
     myclusterer.Estep()
-    myclusterer.draw_on(mycanvas, canvasbb.coors)
+    if STEP%1==0:
+       myclusterer.draw_on(mycanvas, canvasbb.coors)
+       with open('out.dat','w') as f:
+           f.write('\n'.join(str(c.coors) for c in myclusterer.centers))
     if STEP<numsteps:
         mycanvas.after(10, render) #render 100 times a second (or slower)
 

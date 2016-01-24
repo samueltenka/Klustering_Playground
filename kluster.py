@@ -8,6 +8,9 @@ from math import sqrt
 from random import random
 from sys import stdout
 
+from tkinter import *
+master = Tk()
+
 print('defining lambdas...')
 p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
                'STYLEREFS="(?P<stylerefs>[^"]*)" ' +
@@ -21,14 +24,22 @@ p = re.compile('<String ID="(?P<stringid>[^"]*)" ' +
 print('defining lambdas...')
 with open('0005.xml') as f:
     text = f.read()
-    coordinates = [(int(float(m.group('height'))), int(float(m.group('width')))) for m in p.finditer(text)]
+    coordinates = [(float(m.group('vpos')), float(m.group('hpos'))) for m in p.finditer(text)]
     print('xml has %d characters, %d ocr points.' % (len(text), len(coordinates)))
 xs = [[c[i] for c in coordinates] for i in range(2)]
-minx, maxx, miny, maxy = min(xs[0]), max(xs[0]), min(xs[1]), max(xs[1])
-print('height ranges in [%d,%d]; width ranges in [%d,%d]' % (minx, maxx, miny, maxy))
+miny, maxy, minx, maxx = min(xs[0]), max(xs[0]), min(xs[1]), max(xs[1])
+print('vpos ranges in [%d,%d]; hpos ranges in [%d,%d]' % (miny, maxy, minx, maxx))
+
+cnvs_h, cnvs_w = 480, 320
+w = Canvas(master, height=cnvs_h, width=cnvs_w)
+to_canvas = lambda coor: (cnvs_h * (coor[0]-miny)/(maxy-miny), cnvs_w * (coor[1]-minx)/(maxx-minx))
+w.pack()
+#for c in coordinates:
+#    y,x = to_canvas(c)
+#    w.create_rectangle(x, y, x+1, y+1, outline="blue",fill="blue")
 
 #kmeans klustering:
-K = 10; N = len(coordinates)
+K = 100; N = len(coordinates)
 print('defining lambdas...')
 randcoor = lambda : (random()*(maxx-minx)+minx, random()*(maxy-miny)+miny)
 dist = lambda c0, c1: sqrt((c1[0]-c0[0])**2+(c1[1]-c0[1])**2)
@@ -49,3 +60,14 @@ for i in range(100):
    for i in range(N): accumulate(kluster_sums[assignments[i]], coordinates[i])
    for i in range(K): centers[i] = randcoor() if counts[i]==0 else kluster_sums[i]/counts[i]
    assignments = [closest_cent(centers, coor) for coor in coordinates]
+
+lvls = '00 44 88 CC FF'.split()
+colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
+
+for i in range(K):
+    y,x = to_canvas(centers[i])
+    w.create_rectangle(x, y, x+10, y+10, outline=colors[i])
+for i in range(N):
+    y,x = to_canvas(coordinates[i])
+    w.create_rectangle(x, y, x+1, y+1, outline=colors[assignments[i]])
+mainloop()

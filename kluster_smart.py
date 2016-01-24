@@ -3,15 +3,12 @@ parses xml file of ocr'd string-location data:
    <String ID="TB.0005.2_0_0" STYLEREFS="TS_10.0" HEIGHT="156.0" WIDTH="448.0" HPOS="540.0" VPOS="1908.0" CONTENT="121st" WC="1.0"/>
 and clusters
 '''
-import re
-from math import sqrt
-from random import random
 from sys import stdout
 
-from tkinter import *
 from Box import Box
-from GetCoors import Page
+from Page import Page
 from KMeans import KMeans
+from tkinter import *
 
 master = Tk()
 canvasbb = Box((0,0),(480,320))
@@ -23,16 +20,12 @@ myclusterer = KMeans(K=100, page=mypage)
 
 STEP=0; numsteps=100
 def render():
-    global mypage, mycanvas
+    global STEP, numsteps, mycanvas, mypage, myclusterer
+    print('step %d...' % STEP); STEP+=1; stdout.flush()
     mycanvas.delete('all')
-
-    lvls = '00 CC 44 FF 88'.split()
-    colors = ['#'+R+G+B for R in lvls for G in lvls for B in lvls]
-    for i in range(K):
-        centers[i].draw_on(mycanvas, canvasbb.coors, mypage.bb.coors)
-    for i in range(N):
-        mypage.words[i].draw_on(mycanvas, canvasbb.coors, mypage.bb.coors)
-
+    myclusterer.Mstep()
+    myclusterer.Estep()
+    myclusterer.draw_on(mycanvas, canvasbb.coors)
     if STEP<numsteps:
         mycanvas.after(10, render) #render 100 times a second (or slower)
 

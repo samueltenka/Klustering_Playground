@@ -1,9 +1,10 @@
 from Box import Box
 from Page import Page
-from myFFT import periodicity
+from myFFT import FFT, periodicity
 #from KMeans import KMeans
 
-def columnation_of(filename, num_bins=1024): #must be pow of 2
+def histogram_of(filename, num_bins=1024):
+    '''num_bins must be power of 2'''
     mypage = Page(filename)
     get_xs = lambda mybox: tuple(mybox.coors[i][1] for i in range(2))
 
@@ -16,16 +17,28 @@ def columnation_of(filename, num_bins=1024): #must be pow of 2
             histogram[i] += 1
 
     s = sum(histogram)
-    if s==0: return -1 #'article has no text'
-    histogram  = [float(h)/s for h in histogram]
-    #print(histogram[:3])
+    if s==0: return None #return -1 #article has no text
+    return [float(h)/s for h in histogram]
 
+def FFT_columnation_of(histogram):
     return periodicity(histogram)
+def var_columnation_of(histogram):
+    return 1.0/sum((h-1.0/len(histogram))**2 for h in histogram)
 
-import os
+import os, sys
+from matplotlib import pyplot as plt
 path = "C:\\Users\\Samuel\\Desktop\\Batch 1\\Batch 1\\sn85042289\\15032502570\\1961110101\\"
-myfiles = [(columnation_of(path+file), file)
-           for file in os.listdir(path) if file.endswith(".xml")]
-myfiles.sort()
-for c,f in myfiles:
-    print(f,c)
+files = [] #(columnation score, filename, histogram) tuples
+for f in (f for f in os.listdir(path) if len(f)==len('0000.xml') and f.endswith(".xml")):
+   print('processing %s...' %f); sys.stdout.flush()
+   h = histogram_of(path+f)
+   if h is None: continue
+   vc = var_columnation_of(h)
+   files.append((vc,f,h))
+
+files.sort()
+for (c,f,h),i in zip(files,range(len(files))):
+   plt.plot(h) #plt.plot(FFT(h))
+   plt.title('var_columnation(%s) = %f'%(f,var_columnation_of(h)))
+   plt.savefig('%d_plot_%s.png' % (i,f))
+   plt.clf()

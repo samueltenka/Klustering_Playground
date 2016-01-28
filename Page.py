@@ -24,13 +24,13 @@ class Page:
         self.words.append(wordbox)
         self.bb.join_with(wordbox)
     def read_from(self, filename):
-        print('reading [%s]...' % filename); stdout.flush()
+        #print('reading [%s]...' % filename); stdout.flush()
         with open(filename) as f:
             getnum = lambda match, label: float(match.group(label))
             data = [(getnum(m,'vpos'),getnum(m,'hpos'),
                      getnum(m,'height'),getnum(m,'width')) for m in p.finditer(f.read())]
             for y,x,h,w in data:
                self.add_word(Box([y,x],[y+h,x+w]))
-        print('found %d ocr points...' % len(self.words)); stdout.flush()
-        print('y ranges in [%d,%d]; x ranges in [%d,%d].' %
-              tuple(self.bb.coors[i][j] for j in range(2) for i in range(2))); stdout.flush()
+        #print('found %d ocr points...' % len(self.words)); stdout.flush()
+        #print('y ranges in [%d,%d]; x ranges in [%d,%d].' %
+        #      tuple(self.bb.coors[i][j] for j in range(2) for i in range(2))); stdout.flush()
